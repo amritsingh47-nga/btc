@@ -85,7 +85,7 @@ class AmazonHiringSource:
                     "equalFilters": [],
                     "containFilters": [{"key": "isPrivateSchedule", "val": ["false"]}],
                     "rangeFilters": [],
-                    "orderBy": "DISTANCE",
+                    "orFilters": [],
                     "dateFilters": [],
                     "sorters": [],
                     "pageSize": self.cfg.page_size,
