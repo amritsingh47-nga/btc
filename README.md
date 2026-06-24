@@ -89,6 +89,22 @@ Add `title_contains` / `min_pay_rate` if you want to narrow it further.
 
 ## Running
 
+### Easiest: one-tap launcher on your own PC
+
+No server needed. This catches jobs while your PC is on and the window is open;
+alerts still go to your **phone** via Telegram, so you don't have to sit at the
+computer — it just has to stay powered on and awake.
+
+- **Windows:** double-click **`run.bat`**
+- **macOS / Linux:** run **`./run.sh`** (first time: `chmod +x run.sh`)
+
+The first run installs everything, then stops and asks you to fill in `.env`
+(your three tokens — see setup above). Fill it in, launch again, and it starts
+watching. Leave the window open; closing it stops the detector. Turn off
+auto-sleep in your power settings so it keeps running while you're away.
+
+### Manual commands
+
 ```bash
 # Send yourself a fake match to confirm alerts work:
 python -m amazon_job_detector test-notify
