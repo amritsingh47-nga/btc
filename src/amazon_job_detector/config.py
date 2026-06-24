@@ -77,10 +77,19 @@ class DiscordConfig:
 
 
 @dataclass
+class TwilioSmsConfig:
+    account_sid: str
+    auth_token: str
+    from_number: str
+    to_number: str
+
+
+@dataclass
 class NotifyConfig:
     console: bool = True
     telegram: TelegramConfig | None = None
     discord: DiscordConfig | None = None
+    sms: TwilioSmsConfig | None = None
 
 
 @dataclass
@@ -142,10 +151,22 @@ def load_config(path: str | Path) -> Config:
         discord = DiscordConfig(
             webhook_url=_env(d.get("webhook_url_env"), required=True, label="notify.discord.webhook_url_env") or "",
         )
+    sms = None
+    if n.get("sms"):
+        s = n["sms"]
+        sms = TwilioSmsConfig(
+            account_sid=_env(s.get("account_sid_env"), required=True, label="notify.sms.account_sid_env") or "",
+            auth_token=_env(s.get("auth_token_env"), required=True, label="notify.sms.auth_token_env") or "",
+            from_number=s.get("from_number") or "",
+            to_number=s.get("to_number") or "",
+        )
+        if not sms.from_number or not sms.to_number:
+            raise ConfigError("notify.sms requires from_number and to_number")
     notify = NotifyConfig(
         console=bool(n.get("console", True)),
         telegram=telegram,
         discord=discord,
+        sms=sms,
     )
 
     return Config(

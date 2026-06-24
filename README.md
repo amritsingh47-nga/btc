@@ -171,8 +171,8 @@ design — use `probe` for that.
       the application flow via your session. Brittle + against ToS + may hit an
       assessment/SMS step, so it'll always run *behind* alerting, never instead
       of it.
+- [x] SMS channel (Twilio).
 - [ ] Multiple geo regions in one process.
-- [ ] Optional SMS channel (Twilio) for users who want a phone call/text.
 
 ---
 

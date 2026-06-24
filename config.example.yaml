@@ -48,5 +48,12 @@ notify:
   telegram:                   # fastest phone alert; delete this block to disable
     bot_token_env: "TELEGRAM_BOT_TOKEN"
     chat_id_env: "TELEGRAM_CHAT_ID"
-  # discord:                  # optional alternative/additional channel
+  # discord:                  # post matches to a Discord channel (just needs a webhook)
   #   webhook_url_env: "DISCORD_WEBHOOK_URL"
+  # sms:                      # text message via Twilio
+  #   account_sid_env: "TWILIO_ACCOUNT_SID"
+  #   auth_token_env: "TWILIO_AUTH_TOKEN"
+  #   from_number: "+15551234567"   # your Twilio number
+  #   to_number: "+15559876543"     # your phone
+
+# You can enable several channels at once — every enabled one gets pinged.

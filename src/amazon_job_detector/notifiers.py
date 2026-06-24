@@ -59,6 +59,32 @@ class DiscordNotifier:
         resp.raise_for_status()
 
 
+class TwilioSmsNotifier:
+    """Sends an SMS via Twilio's REST API (no SDK needed)."""
+
+    def __init__(self, account_sid: str, auth_token: str, from_number: str, to_number: str):
+        self.url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json"
+        self.auth = (account_sid, auth_token)
+        self.from_number = from_number
+        self.to_number = to_number
+
+    def send(self, job: Job) -> None:
+        # SMS has no rich formatting and a length limit; keep it short.
+        loc = ", ".join(p for p in [job.location_name, job.city, job.state] if p)
+        body = f"Amazon job: {job.title or 'role'}"
+        if loc:
+            body += f" @ {loc}"
+        if job.url:
+            body += f"\n{job.url}"
+        resp = requests.post(
+            self.url,
+            auth=self.auth,
+            data={"From": self.from_number, "To": self.to_number, "Body": body[:1500]},
+            timeout=15,
+        )
+        resp.raise_for_status()
+
+
 def build_notifiers(cfg: NotifyConfig) -> list[Notifier]:
     notifiers: list[Notifier] = []
     if cfg.console:
@@ -67,6 +93,12 @@ def build_notifiers(cfg: NotifyConfig) -> list[Notifier]:
         notifiers.append(TelegramNotifier(cfg.telegram.bot_token, cfg.telegram.chat_id))
     if cfg.discord:
         notifiers.append(DiscordNotifier(cfg.discord.webhook_url))
+    if cfg.sms:
+        notifiers.append(
+            TwilioSmsNotifier(
+                cfg.sms.account_sid, cfg.sms.auth_token, cfg.sms.from_number, cfg.sms.to_number
+            )
+        )
     return notifiers
 
 
