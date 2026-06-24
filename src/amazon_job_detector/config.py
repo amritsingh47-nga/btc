@@ -55,14 +55,22 @@ class SourceConfig:
 @dataclass
 class MatchConfig:
     site_codes: list[str] = field(default_factory=list)
+    postal_codes: list[str] = field(default_factory=list)
+    cities: list[str] = field(default_factory=list)
     title_contains: list[str] = field(default_factory=list)
     keywords: list[str] = field(default_factory=list)
     min_pay_rate: float | None = None
 
     def __post_init__(self) -> None:
         self.site_codes = [s.lower() for s in self.site_codes]
+        self.postal_codes = [str(s).strip().lower() for s in self.postal_codes]
+        self.cities = [s.lower() for s in self.cities]
         self.title_contains = [s.lower() for s in self.title_contains]
         self.keywords = [s.lower() for s in self.keywords]
+
+    @property
+    def has_location_filter(self) -> bool:
+        return bool(self.site_codes or self.postal_codes or self.cities)
 
 
 @dataclass
@@ -132,6 +140,8 @@ def load_config(path: str | Path) -> Config:
     m = data.get("match") or {}
     match = MatchConfig(
         site_codes=list(m.get("site_codes") or []),
+        postal_codes=list(m.get("postal_codes") or []),
+        cities=list(m.get("cities") or []),
         title_contains=list(m.get("title_contains") or []),
         keywords=list(m.get("keywords") or []),
         min_pay_rate=m.get("min_pay_rate"),

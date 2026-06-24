@@ -45,12 +45,12 @@ def run_forever(cfg: Config) -> None:
     store = SeenStore(cfg.state_file)
     notifiers = build_notifiers(cfg.notify)
 
-    if not cfg.match.site_codes and not cfg.match.title_contains and not cfg.match.keywords:
-        log.warning("No match criteria configured — EVERY job will alert. Set match.site_codes.")
+    if not cfg.match.has_location_filter and not cfg.match.title_contains and not cfg.match.keywords:
+        log.warning("No match criteria configured — EVERY job will alert. Set match.postal_codes.")
 
     log.info(
-        "Watching for jobs %s every ~%ds (+/-%ds). Notifiers: %s",
-        cfg.match.site_codes or "(any)",
+        "Watching for jobs in %s every ~%ds (+/-%ds). Notifiers: %s",
+        cfg.match.postal_codes or cfg.match.cities or cfg.match.site_codes or "(any)",
         cfg.poll_interval_seconds,
         cfg.jitter_seconds,
         [type(n).__name__ for n in notifiers],

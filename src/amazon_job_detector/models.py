@@ -20,6 +20,7 @@ class Job:
     location_name: str = ""
     city: str = ""
     state: str = ""
+    postal_code: str = ""
     pay_rate: float | None = None
     url: str = ""
     raw: dict[str, Any] = field(default_factory=dict, repr=False, compare=False)
@@ -32,7 +33,7 @@ class Job:
         """
         import json
 
-        parts = [self.title, self.location_name, self.city, self.state]
+        parts = [self.title, self.location_name, self.city, self.state, self.postal_code]
         try:
             parts.append(json.dumps(self.raw, default=str))
         except (TypeError, ValueError):

@@ -19,20 +19,32 @@ source:
   # Required in practice — the API rejects unauthenticated requests. See README.
   auth_token_env: "AMZ_AUTH_TOKEN"
 
-  # Search center + radius. These coords are central Sacramento; SMF1/SMF6 are within ~50mi.
+  # Search center + radius. Centered between SMF1 and SMF6 (both in Sacramento);
+  # 25 mi comfortably covers both buildings and the surrounding metro.
   geo:
-    lat: 38.5816
-    lng: -121.4944
-    distance_miles: 50
+    lat: 38.68
+    lng: -121.59
+    distance_miles: 25
 
   page_size: 100
   country: "United States"
   locale: "en-US"
 
-# A job must satisfy every criterion you set below (AND). Leave a list empty to skip it.
+# Location is an OR across postal_codes / cities / site_codes (a job qualifies if
+# it hits ANY). title_contains / keywords / min_pay_rate are then ANDed on top.
+# Leave a list empty to skip that filter.
 match:
-  # THE key filter: building/site codes. Matched anywhere in the posting.
-  site_codes: ["SMF1", "SMF6"]
+  # MOST RELIABLE building filter: ZIP code. Amazon's search results carry the
+  # ZIP but usually NOT the FC code, so match on ZIP.
+  #   SMF1 = 95835 (4900 W Elkhorn Blvd) | SMF6 = 95837 (4930 Allbaugh Dr)
+  postal_codes: ["95835", "95837"]
+
+  # Match by city instead/as well (broader — catches every Amazon site in the city).
+  cities: []                  # e.g. ["Sacramento"]
+
+  # Building codes, matched anywhere in the posting text. Kept for completeness,
+  # but rarely present in search results — prefer postal_codes above.
+  site_codes: []
 
   # Optional: only roles whose TITLE contains one of these phrases.
   title_contains: []          # e.g. ["Warehouse Associate", "Sortation"]

@@ -82,8 +82,17 @@ and set `DISCORD_WEBHOOK_URL` in `.env`.
 
 ### 4. Tell it what to watch
 
-Edit `config.yaml` → `match.site_codes` (already set to `["SMF1", "SMF6"]`).
-Add `title_contains` / `min_pay_rate` if you want to narrow it further.
+Edit `config.yaml` → `match`. **Match buildings by ZIP code**, not by FC code:
+Amazon's search results carry the city/ZIP but usually *not* the "SMF1" code, so
+`postal_codes` is the reliable filter. The defaults are pre-set:
+
+- **SMF1** = `95835` (4900 W Elkhorn Blvd, Sacramento)
+- **SMF6** = `95837` (4930 Allbaugh Dr, Sacramento)
+
+Location matching is an OR across `postal_codes` / `cities` / `site_codes`.
+Add `title_contains` / `min_pay_rate` to narrow further (those are ANDed on top).
+Run `probe` to see the actual `city`/`postalCode` values Amazon returns and
+confirm your filters line up.
 
 ---
 

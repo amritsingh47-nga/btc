@@ -39,6 +39,7 @@ query searchJobCardsByLocation($searchJobRequest: SearchJobRequest!) {
       jobTitle
       city
       state
+      postalCode
       locationName
       totalPayRateMin
       totalPayRateMax
@@ -135,6 +136,7 @@ class AmazonHiringSource:
                     location_name=c.get("locationName") or "",
                     city=c.get("city") or "",
                     state=c.get("state") or "",
+                    postal_code=str(c.get("postalCode") or ""),
                     pay_rate=float(pay) if pay not in (None, "") else None,
                     url=f"https://hiring.amazon.com/app#/jobDetail?jobId={job_id}&locale={self.cfg.locale}",
                     raw=c,
