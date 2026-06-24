@@ -22,4 +22,5 @@ if [ ! -f .env ]; then
 fi
 
 echo "Starting detector. Leave this window open. Press Ctrl+C to stop."
+export PYTHONPATH=src
 python -m amazon_job_detector run --config config.yaml

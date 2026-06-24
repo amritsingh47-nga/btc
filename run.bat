@@ -23,5 +23,6 @@ if not exist .env (
 )
 
 echo Starting detector. Leave this window open. Press Ctrl+C to stop.
+set "PYTHONPATH=src"
 python -m amazon_job_detector run --config config.yaml
 pause
