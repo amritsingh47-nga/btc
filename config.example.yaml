@@ -1,0 +1,52 @@
+# Amazon SMF1/SMF6 job detector — example config.
+# Copy to config.yaml and edit. Secrets are NOT stored here; they come from
+# environment variables named below (see .env.example).
+
+# How often to poll. Hourly jobs vanish fast, so keep this tight (20-30s), but
+# not so tight you get rate-limited/blocked. Jitter avoids a robotic fixed cadence.
+poll_interval_seconds: 25
+jitter_seconds: 8
+
+# Where to remember already-alerted jobs (so you aren't pinged twice).
+state_file: seen_jobs.json
+
+source:
+  # AppSync GraphQL endpoint for hiring.amazon.com. This is the well-known default;
+  # if it stops working, capture the current one from your browser (see README).
+  endpoint: "https://e5mquma77feepi2bdn4d6h3mpu.appsync-api.us-east-1.amazonaws.com/graphql"
+
+  # Name of the env var holding your session Authorization token (from the browser).
+  # Required in practice — the API rejects unauthenticated requests. See README.
+  auth_token_env: "AMZ_AUTH_TOKEN"
+
+  # Search center + radius. These coords are central Sacramento; SMF1/SMF6 are within ~50mi.
+  geo:
+    lat: 38.5816
+    lng: -121.4944
+    distance_miles: 50
+
+  page_size: 100
+  country: "United States"
+  locale: "en-US"
+
+# A job must satisfy every criterion you set below (AND). Leave a list empty to skip it.
+match:
+  # THE key filter: building/site codes. Matched anywhere in the posting.
+  site_codes: ["SMF1", "SMF6"]
+
+  # Optional: only roles whose TITLE contains one of these phrases.
+  title_contains: []          # e.g. ["Warehouse Associate", "Sortation"]
+
+  # Optional: any of these words appears anywhere in the posting.
+  keywords: []
+
+  # Optional: minimum hourly pay (only matches when the API reports a rate).
+  min_pay_rate: null
+
+notify:
+  console: true               # always print matches to stdout/logs
+  telegram:                   # fastest phone alert; delete this block to disable
+    bot_token_env: "TELEGRAM_BOT_TOKEN"
+    chat_id_env: "TELEGRAM_CHAT_ID"
+  # discord:                  # optional alternative/additional channel
+  #   webhook_url_env: "DISCORD_WEBHOOK_URL"

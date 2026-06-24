@@ -1,0 +1,13 @@
+services:
+  amazon-job-detector:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: amazon-job-detector
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
+      - ../seen_jobs.json:/app/seen_jobs.json
+    # Tip: `docker compose logs -f` to watch matches scroll by.

@@ -1,0 +1,13 @@
+# Secrets / local config
+.env
+config.yaml
+seen_jobs.json
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
