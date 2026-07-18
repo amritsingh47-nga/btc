@@ -1,11 +1,40 @@
-# Binance API 配置
-# 注意: api_key 和 api_secret 会被 .env 文件中的环境变量自动覆盖
-# 推荐使用 .env 文件配置敏感信息
+# =====================================================================
+# Analysts Trading Bot — SIGNALS ONLY.
+# This system never places, routes, or executes any trade, paper or
+# live, on any venue. No broker/exchange trading credentials exist.
+# =====================================================================
+
+# Market data source
+data:
+  source: yfinance   # "yfinance" (default, futures) | "synthetic" (offline demo data, clearly labeled) | "binance" (reference only, data-only)
+
+# Instrument display mapping (yfinance symbol -> dashboard/Discord label)
+instruments:
+  "NQ=F":
+    display: "NQ"
+    name: "Nasdaq 100 futures"
+  "ES=F":
+    display: "MES"
+    name: "S&P 500 futures (micro tracks ES tick-for-tick; signal on ES = trade on MES)"
+  "GC=F":
+    display: "GOLD"
+    name: "Gold futures"
+  "CL=F":
+    display: "USOIL"
+    name: "WTI crude futures"
+
+# Signal engine cycle
+cycle:
+  interval_minutes: 15   # analyze all instruments every 15 minutes
+  autostart: true        # start the signal loop on boot (no Start button needed)
+
+# Binance API 配置 — NOT REQUIRED. Kept only because data.source=binance
+# remains selectable for reference; trading paths are stubbed regardless.
 binance:
-  api_key: "BINANCE_API_KEY"        # 会被环境变量 BINANCE_API_KEY 覆盖
-  api_secret: "BINANCE_API_SECRET"  # 会被环境变量 BINANCE_API_SECRET 覆盖
-  testnet: true  # 测试网模式，实盘前改为 false
-  
+  api_key: ""
+  api_secret: ""
+  testnet: true
+
 # DeepSeek API 配置 (向后兼容)
 # 注意: api_key 会被 .env 文件中的环境变量自动覆盖
 deepseek:
@@ -25,12 +54,12 @@ llm:
   timeout: 120
   max_retries: 3
 
-# 交易配置
+# 交易配置 (signal universe — nothing is ever traded)
 trading:
-  symbols: ["BTCUSDT"]  # 默认只使用 BTC，可添加其他币种如 "ETHUSDT", "SOLUSDT"
-  primary_symbol: "BTCUSDT"  # 主要交易对（向后兼容）
-  timeframes: ["1m", "5m", "15m", "1h"]
-  leverage: 5
+  symbols: ["NQ=F", "ES=F", "GC=F", "CL=F"]
+  primary_symbol: "NQ=F"
+  timeframes: ["5m", "15m", "1h"]   # 1h=trend, 15m=setup (primary), 5m=trigger (ADVISORY-ONLY: ~15min data delay)
+  leverage: 1
   symbol_blacklist: []  # 可选：禁用高风险/低流动性币种
   selector_min_quote_volume: 5000000  # 24h USDT成交额下限
   selector_min_price: 0.05  # 过滤超低价币种
@@ -90,5 +119,5 @@ agents:
   reflection_agent_llm: false      # 每 10 笔交易后 LLM 反思
   reflection_agent_local: true     # 本地规则反思
   
-  # 选币
-  symbol_selector_agent: true      # AUTO1/AUTO3 自动选币
+  # 选币 (crypto AUTO selection — meaningless for the fixed futures set)
+  symbol_selector_agent: false

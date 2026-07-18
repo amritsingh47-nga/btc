@@ -41,7 +41,10 @@ class DataSyncAgent:
         Args:
             client: Binance客户端实例，如果为None则自动创建
         """
-        self.client = client or BinanceClient()
+        if client is None:
+            from src.api.market_client_factory import create_market_client
+            client = create_market_client()
+        self.client = client
         
         # WebSocket 管理器（可选，默认禁用以避免事件循环冲突）
         import os

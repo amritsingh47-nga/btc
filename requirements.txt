@@ -10,7 +10,7 @@ ta==0.11.0
 # 异步处理
 asyncio==3.4.3
 aiohttp==3.9.1
-websockets==12.0
+websockets>=13.0
 
 # DeepSeek API
 openai==1.6.1

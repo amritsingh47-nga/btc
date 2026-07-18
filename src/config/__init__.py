@@ -42,6 +42,12 @@ class Config:
     
     def _override_from_env(self):
         """从环境变量覆盖配置"""
+        # Data source override (yfinance / synthetic / binance)
+        if os.getenv('DATA_SOURCE'):
+            if 'data' not in self._config or self._config['data'] is None:
+                self._config['data'] = {}
+            self._config['data']['source'] = os.getenv('DATA_SOURCE')
+
         # Initialize sections if missing
         for section in ['binance', 'deepseek', 'redis']:
             if section not in self._config or self._config[section] is None:

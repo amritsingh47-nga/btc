@@ -75,7 +75,8 @@ class MultiAgentTradingBot:
         self._headless_filter = HeadlessFilter()
         
         self.config = Config()
-        self.client = BinanceClient(test_mode=trading_parameters.test_mode)
+        from src.api.market_client_factory import create_market_client
+        self.client = create_market_client(test_mode=trading_parameters.test_mode)
 
         global_state.is_test_mode = trading_parameters.test_mode  # Set test mode in global state
         global_state.mode_switch_handler = self.switch_runtime_mode

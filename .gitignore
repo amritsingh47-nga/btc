@@ -108,3 +108,8 @@ tmp/
 # Development folders (not for production)
 nofx-dev/
 nofx-main/
+
+# Analysts Trading Bot
+.venv/
+data/
+logs/

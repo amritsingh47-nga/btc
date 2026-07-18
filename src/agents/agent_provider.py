@@ -39,6 +39,8 @@ class AgentProvider:
         self.quant_analyst_agent = QuantAnalystAgent()     
         self.multi_period_agent = MultiPeriodParserAgent()
         self.decision_core_agent = DecisionCoreAgent()
+        # Alias: DecisionStageRunner reaches this as `agent_provider.decision_core`
+        self.decision_core = self.decision_core_agent
         self.symbol_selector_agent = SymbolSelectorAgent()
           
         print("  ✅ TriggerDetector ready")
