@@ -807,8 +807,13 @@ class MultiAgentTradingBot:
     def switch_runtime_mode(self, target_mode: str, force_refresh: bool = False) -> Dict[str, Any]:
         """Switch test/live mode at runtime, or force refresh current mode account state."""
         mode = (target_mode or "").strip().lower()
+        if mode == "live":
+            raise RuntimeError(
+                "Signals-only build: there is no live mode. This system never "
+                "places, routes, or executes any trade on any venue."
+            )
         if mode not in {"test", "live"}:
-            raise ValueError("Invalid mode. Must be 'test' or 'live'.")
+            raise ValueError("Invalid mode. Must be 'test'.")
 
         current_mode = "test" if self.trading_parameters.test_mode else "live"
         if mode == current_mode and not force_refresh:

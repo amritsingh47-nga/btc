@@ -114,15 +114,10 @@ def main():
     import os
     env_run_mode = os.getenv('RUN_MODE', 'test').lower()
 
-    # Priority: explicit CLI (--test/--live) > Env Var
-    if args.test:
-        effective_test_mode = True
-    elif args.live:
-        effective_test_mode = False
-    else:
-        effective_test_mode = (env_run_mode != 'live')
-
-    args.test = effective_test_mode
+    # SIGNALS ONLY: test mode is permanent. --live and RUN_MODE=live are ignored.
+    if args.live or env_run_mode == 'live':
+        print("🚫 Signals-only build: live mode does not exist. Running in test mode.")
+    args.test = True
 
     if args.symbols:
         os.environ['TRADING_SYMBOLS'] = args.symbols.strip()

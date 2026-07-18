@@ -100,10 +100,15 @@ class ActionPipelineStageRunner:
         global_state.update_decision(decision_dict)
 
         if not audit_result.passed:
-            print(f"\n❌ 决策被风控拦截: {audit_result.blocked_reason}")
+            # Signals-only build: the risk veto is a LABEL, not a blocker.
+            # The idea is still published (Discord/dashboard) as WOULD-VETO;
+            # only the virtual execution is skipped.
+            print(f"\n🏷️ Risk audit label: WOULD-VETO ({audit_result.blocked_reason})")
             return {
-                'status': 'blocked',
+                'status': 'would_veto',
                 'action': context.vote_result.action,
+                'confidence': context.vote_result.confidence,
+                'order_params': context.order_params,
                 'details': {
                     'reason': audit_result.blocked_reason,
                     'risk_level': audit_result.risk_level.value

@@ -141,12 +141,12 @@ class RiskAuditStageRunner:
             }
         )
 
-        global_state.guardian_status = "PASSED" if audit_result.passed else "BLOCKED"
+        global_state.guardian_status = "PASS" if audit_result.passed else "WOULD-VETO"
         if not audit_result.passed:
-            global_state.add_log(f"[🛡️ GUARDIAN] ❌ BLOCKED ({audit_result.blocked_reason})")
+            global_state.add_log(f"[🛡️ GUARDIAN] 🏷️ WOULD-VETO ({audit_result.blocked_reason}) — label only, signal still published")
             global_state.add_agent_message(
                 "risk_audit",
-                f"BLOCKED | {audit_result.blocked_reason}",
+                f"WOULD-VETO | {audit_result.blocked_reason}",
                 level="warning"
             )
         else:

@@ -53,14 +53,14 @@ class ExecutionStageRunner:
             data={"mode": "test" if self.test_mode else "live"}
         )
 
-        if self.test_mode:
-            if not headless_mode:
-                print("\n[Step 5/5] 🧪 TestMode - 模拟执行...")
-            return self._execute_test_mode_order(context)
-
+        # SIGNALS ONLY — the live path is permanently sealed. Every decision
+        # is recorded against the virtual account; nothing ever reaches a venue.
+        if not self.test_mode:
+            log.error("SIGNALS-ONLY VIOLATION ATTEMPT: live execution requested; recording virtually instead")
+            global_state.add_log("[🚫 SIGNALS-ONLY] Live execution is disabled forever; recorded as hypothetical trade")
         if not headless_mode:
-            print("\n[Step 5/5] 🚀 LiveTrade - 实盘执行...")
-        return self._execute_live_mode_order(context)
+            print("\n[Step 5/5] 🧪 Hypothetical execution (signals only)...")
+        return self._execute_test_mode_order(context)
 
     def _execute_test_mode_order(
         self,
@@ -157,7 +157,10 @@ class ExecutionStageRunner:
         self,
         context: CycleContext
     ) -> Dict[str, Any]:
-        """Execute live order path."""
+        """Live order path — permanently disabled (signals only)."""
+        raise RuntimeError(
+            "Signals-only build: live order execution is removed and can never run."
+        )
         try:
             is_success = self._execute_order(context.order_params)
             status_icon = "✅" if is_success else "❌"
