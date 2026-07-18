@@ -756,8 +756,22 @@ class MultiAgentTradingBot:
     def run_once(self) -> Dict:
         """运行一次交易循环（同步包装）"""
         result = asyncio.run(self._run_trading_cycle())
+        try:
+            from src.notifications import get_notifier
+            get_notifier().notify_cycle_result(
+                self.symbol_manager.current_symbol, result,
+                synthetic=self._is_synthetic_data()
+            )
+        except Exception as e:
+            log.warning(f"Discord notify failed: {e}")
         self._display_recent_trades()
         return result
+
+    def _is_synthetic_data(self) -> bool:
+        try:
+            return str(self.config.get('data.source', 'yfinance')).lower() == 'synthetic'
+        except Exception:
+            return False
 
     def _display_recent_trades(self):
         """显示最近的交易记录 (增强版表格)"""
@@ -1139,10 +1153,20 @@ class MultiAgentTradingBot:
                     
                     # Analyze each symbol first without executing OPEN actions
                     result = asyncio.run(self._run_trading_cycle(analyze_only=True))
-                    
+
                     latest_prices[symbol] = global_state.current_price.get(symbol, 0)
-                    
+
                     print(f"  [{symbol}] 结果: {result['status']}")
+
+                    # 📣 Discord: post what the system WOULD trade (or why it passes)
+                    try:
+                        from src.notifications import get_notifier
+                        get_notifier().notify_cycle_result(
+                            symbol, result, cycle_num=cycle_num,
+                            synthetic=self._is_synthetic_data()
+                        )
+                    except Exception as e:
+                        log.warning(f"Discord notify failed: {e}")
                     
                     # Collect viable open opportunities
                     suggested_trade = SuggestedTrade.from_cycle_result(symbol=symbol, result=result)
@@ -1203,6 +1227,13 @@ class MultiAgentTradingBot:
                 # 💰 Update Virtual Account PnL (Mark-to-Market)
                 if self.trading_parameters.test_mode:
                     self._update_virtual_account_stats(latest_prices)
+
+                # 📣 Discord quiet mode: flush hourly PASS digest when due
+                try:
+                    from src.notifications import get_notifier
+                    get_notifier().maybe_flush_pass_digest()
+                except Exception:
+                    pass
                 
                 # 🖥️ Headless Mode: Print account summary after each cycle
                 if self._headless_mode:
