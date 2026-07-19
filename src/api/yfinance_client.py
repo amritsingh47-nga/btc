@@ -116,6 +116,16 @@ class YFinanceClient:
             raise ValueError(f"Unsupported interval for yfinance: {interval}")
         yf_interval, period, ms_per_bar = _INTERVAL_MAP[interval]
 
+        # Scale the requested period up when the caller wants more bars than
+        # the default window holds (e.g. ML training wants weeks of 5m).
+        # Yahoo caps intraday history at ~60 days.
+        if limit:
+            bars_per_day = max(1, 86_400_000 // ms_per_bar)
+            needed_days = min(60, (limit // bars_per_day) + 3)
+            default_days = int(period.rstrip('dy')) if period.endswith('d') else 9999
+            if needed_days > default_days and yf_interval != '1d':
+                period = f"{needed_days}d"
+
         # Short in-memory TTL so one cycle's repeated callers share a fetch.
         cache_key = (symbol.upper(), interval, bool(start_time))
         ttl = 60 if start_time is None else 30

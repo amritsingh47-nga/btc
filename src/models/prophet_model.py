@@ -574,41 +574,51 @@ class ProphetAutoTrainer:
         """获取历史数据"""
         try:
             limit = self.training_days * 24 * 12  # 5分钟K线
-            
-            all_klines = []
-            remaining = limit
-            end_time = None
-            
-            while remaining > 0:
-                batch_size = min(remaining, 1000)
-                klines = self.client.client.futures_klines(
-                    symbol=symbol,
-                    interval='5m',
-                    limit=batch_size,
-                    endTime=end_time
-                )
-                
-                if not klines:
-                    break
-                
-                all_klines = klines + all_klines
-                end_time = klines[0][0] - 1
-                remaining -= batch_size
-            
-            # 转换为 DataFrame
-            df = pd.DataFrame(all_klines, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base',
-                'taker_buy_quote', 'ignore'
-            ])
-            
+
+            raw_binance = getattr(self.client, 'client', None)
+            if raw_binance is None:
+                # Generic path (yfinance / synthetic): dict-based get_klines.
+                # yfinance caps 5m history (~60 days); take what's available.
+                kline_dicts = self.client.get_klines(symbol, '5m', limit=limit)
+                if not kline_dicts:
+                    log.warning(f"No 5m history available for {symbol}, skipping training")
+                    return None
+                df = pd.DataFrame(kline_dicts)
+            else:
+                all_klines = []
+                remaining = limit
+                end_time = None
+
+                while remaining > 0:
+                    batch_size = min(remaining, 1000)
+                    klines = raw_binance.futures_klines(
+                        symbol=symbol,
+                        interval='5m',
+                        limit=batch_size,
+                        endTime=end_time
+                    )
+
+                    if not klines:
+                        break
+
+                    all_klines = klines + all_klines
+                    end_time = klines[0][0] - 1
+                    remaining -= batch_size
+
+                # 转换为 DataFrame
+                df = pd.DataFrame(all_klines, columns=[
+                    'timestamp', 'open', 'high', 'low', 'close', 'volume',
+                    'close_time', 'quote_volume', 'trades', 'taker_buy_base',
+                    'taker_buy_quote', 'ignore'
+                ])
+
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
             for col in ['open', 'high', 'low', 'close', 'volume']:
                 df[col] = df[col].astype(float)
-            
+
             df.set_index('timestamp', inplace=True)
             df = df.sort_index()
-            
+
             log.info(f"📥 获取 {len(df)} 条历史 K 线")
             return df
             

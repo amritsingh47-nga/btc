@@ -55,6 +55,10 @@ class QuantClient:
         """
         获取指定币种的量化深度数据
         """
+        # Optional external service (crypto netflow/OI). Without a token it
+        # can only 401 — skip silently instead of spamming every cycle.
+        if not os.getenv('QUANT_AUTH_TOKEN', '').strip():
+            return {}
         url = f"{self.BASE_URL}/ai500/{symbol}?include=netflow,oi,price&auth={self.auth_token}"
         
         try:
