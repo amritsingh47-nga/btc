@@ -41,6 +41,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------------------------------------------------------------------
+# Analysts Trading Bot module routers (futures signals dashboard + stocks,
+# crypto, macro, news, portfolio, fx). Each module degrades cleanly when its
+# free API/key is unavailable.
+# ---------------------------------------------------------------------------
+from src.modules.futures.router import router as futures_router
+from src.modules.stocks.router import router as stocks_router
+from src.modules.crypto.router import router as crypto_router
+from src.modules.macro.router import router as macro_router
+from src.modules.news.router import router as news_router
+from src.modules.portfolio.router import router as portfolio_router
+from src.modules.fx.router import router as fx_router
+
+for _module_router in (futures_router, stocks_router, crypto_router,
+                       macro_router, news_router, portfolio_router, fx_router):
+    app.include_router(_module_router)
+
+
+@app.on_event("startup")
+async def _start_module_pollers():
+    try:
+        from src.modules.news.service import ensure_poller
+        ensure_poller()
+    except Exception as e:
+        log.warning(f"news poller failed to start: {e}")
+
 # Get absolute path to the web directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 WEB_DIR = os.path.join(BASE_DIR, 'web')
@@ -58,7 +84,13 @@ SESSION_COOKIE_NAME = "tradebot_session"
 VALID_SESSIONS = {}
 
 def verify_auth(request: Request):
-    """Dependency to verify login and return role"""
+    """Dependency to verify login and return role.
+
+    Personal deployment (localhost / Tailscale): when WEB_PASSWORD is not
+    set, auth is open and every request is admin. Set WEB_PASSWORD in .env
+    to require login."""
+    if not WEB_PASSWORD:
+        return 'admin'
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if not session_id or session_id not in VALID_SESSIONS:
         raise HTTPException(status_code=401, detail="Unauthorized")
