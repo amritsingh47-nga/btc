@@ -19,8 +19,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     apiGet('/api/agents/config')
-      .then((d) => setAgents(d.agents ?? {}))
-      .catch((e) => setAgentMsg(String(e)))
+      .then((d: any) => setAgents(d.agents ?? {}))
+      .catch((e: any) => setAgentMsg(String(e)))
   }, [])
 
   const toggleAgent = async (name: string, value: boolean) => {
