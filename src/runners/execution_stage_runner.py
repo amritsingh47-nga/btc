@@ -27,6 +27,13 @@ class ExecutionStageRunner:
     ):
         self.saver = saver
         self.test_mode = test_mode
+
+    def _save_virtual_state(self):
+        """Persist the virtual account (upstream called this but never defined it here)."""
+        self.saver.save_virtual_account(
+            balance=global_state.virtual_balance,
+            positions=global_state.virtual_positions
+        )
     
     @log_run
     async def run(
