@@ -42,9 +42,8 @@ logs/
 logs/**/*
 *.log
 
-# 数据目录 (Data Directories)
-data/
-data/**/*
+# 数据目录 (Data Directories) — runtime data at repo root only
+/data/
 !data/README.md
 !data/.gitkeep
 
@@ -73,9 +72,8 @@ frontend/tsconfig.tsbuildinfo
 !package-lock.json
 !tsconfig.json
 
-# 模型文件 (Model Files)
-models/
-models/**/*
+# 模型文件 (Model Files) — trained artifacts at repo root only
+/models/
 *.pkl
 *.h5
 *.pt
@@ -116,7 +114,7 @@ nofx-main/
 
 # Analysts Trading Bot
 .venv/
-data/
+/data/
 logs/
 frontend/node_modules
 frontend/dist
