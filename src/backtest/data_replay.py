@@ -85,7 +85,13 @@ class DataReplayAgent:
         self.start_date = self._to_utc_naive(start_dt)
         self.end_date = self._to_utc_naive(end_dt)
             
-        self.client = client or BinanceClient()
+        if client is None:
+            from src.api.market_client_factory import create_market_client
+            client = create_market_client()
+        self.client = client
+        # Raw python-binance client only exists on BinanceClient; yfinance/
+        # synthetic clients use the generic get_klines path instead.
+        self._raw_binance = getattr(self.client, 'client', None)
         
         # 数据cache
         self.data_cache: Optional[DataCache] = None
@@ -307,7 +313,11 @@ class DataReplayAgent:
     async def _fetch_funding_rates(self) -> List[FundingRateRecord]:
         """获取Funding rate history数据"""
         funding_records = []
-        
+
+        if self._raw_binance is None:
+            # CME futures via yfinance have no funding rate concept
+            return funding_records
+
         try:
             # Calculate time range
             start_ts = self._utc_timestamp_ms(self.start_date)
@@ -441,6 +451,17 @@ class DataReplayAgent:
     
     async def _fetch_and_append_to_cache(self, interval: str, start_ms: int, end_ms: int):
         """Fetch K-lines from API and append to cache"""
+        if self._raw_binance is None:
+            try:
+                klines = self.client.get_klines(
+                    self.symbol, interval, limit=100000, start_time=start_ms
+                )
+                klines = [k for k in klines if k['timestamp'] <= end_ms]
+                if klines:
+                    self._kline_cache.append_data(self.symbol, interval, klines)
+            except Exception as e:
+                log.warning(f"Failed to fetch incremental data: {e}")
+            return
         try:
             klines = self.client.client.futures_klines(
                 symbol=self.symbol,
@@ -469,8 +490,41 @@ class DataReplayAgent:
         except Exception as e:
             log.warning(f"Failed to fetch incremental data: {e}")
     
+    def _kline_dicts_to_dataframe(self, klines: List[Dict]) -> pd.DataFrame:
+        """Convert get_klines() dict output (yfinance/synthetic) to the replay DataFrame format."""
+        if not klines:
+            return pd.DataFrame()
+        df = pd.DataFrame(klines)
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df.set_index('timestamp', inplace=True)
+        for col in ['open', 'high', 'low', 'close', 'volume', 'quote_volume']:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        if 'trades' not in df.columns:
+            df['trades'] = 0
+        df['trades'] = df['trades'].fillna(0).astype(int)
+        return df[['open', 'high', 'low', 'close', 'volume', 'quote_volume', 'trades']]
+
     async def _fetch_klines_batched(self, interval: str, total_limit: int) -> pd.DataFrame:
         """分批获取 K 线数据"""
+        if self._raw_binance is None:
+            # Generic path (yfinance / synthetic): one ranged fetch from the
+            # extended start. yfinance intraday history is capped (~60 days
+            # for 5m/15m) — older requests just return what's available.
+            extended_start = self.start_date - timedelta(days=30)
+            start_ms = self._utc_timestamp_ms(extended_start)
+            klines = self.client.get_klines(
+                self.symbol, interval, limit=total_limit, start_time=start_ms
+            )
+            end_ms = self._utc_timestamp_ms(self.end_date)
+            klines = [k for k in klines if k['timestamp'] <= end_ms]
+            if not klines:
+                log.warning(
+                    f"⚠️ No {interval} history for {self.symbol} in range — "
+                    f"yfinance intraday data only goes back ~60 days"
+                )
+            return self._kline_dicts_to_dataframe(klines)
+
         all_klines = []
         batch_size = 1000  # Binance 推荐的批次大小
         

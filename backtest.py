@@ -66,8 +66,9 @@ Examples:
     parser.add_argument(
         "--symbol",
         type=str,
-        default="AUTO1",  # 默认使用 AUTO1，与实盘一致
-        help="交易对 (AUTO1=动量选币[默认], AUTO3=回测选币, 或指定如 BTCUSDT)"
+        default="NQ=F",
+        help="Instrument to backtest (yfinance symbol: NQ=F, ES=F, GC=F, CL=F; "
+             "ALL = all four; crypto AUTO modes kept for reference)"
     )
     
     parser.add_argument(
@@ -232,6 +233,8 @@ async def main():
         except Exception as e:
             print(f"⚠️ AUTO1 选币异常: {e}，使用默认 BTCUSDT")
             symbols_to_test = ['BTCUSDT']
+    elif args.symbol.upper() == "ALL":
+        symbols_to_test = ["NQ=F", "ES=F", "GC=F", "CL=F"]
     else:
         symbols_to_test = [args.symbol]
     

@@ -160,6 +160,30 @@ in). Put the VPS on your tailnet and nothing else changes.
 display names, cycle interval/autostart, data source, RSS feed list, agent
 toggles.
 
+## Backtesting
+
+The base repo's backtester is wired to the same yfinance data source and
+replays the full agent pipeline (quant analysis → 4-layer filter → decision →
+portfolio) bar by bar:
+
+```bash
+# one instrument, 15-minute decision step
+python backtest.py --start 2026-06-01 --end 2026-07-15 --symbol NQ=F --capital 1000 --step 3
+
+# all four instruments, hourly step (faster)
+python backtest.py --start 2026-06-01 --end 2026-07-15 --symbol ALL --step 12
+```
+
+Each run prints return / drawdown / Sharpe / win rate and writes an HTML
+report to `reports/` (also served at `http://localhost:8000/reports/...`).
+
+**Honest limits:** yfinance only provides ~60 days of 5m/15m history, so
+backtests are capped to roughly the last two months — enough for a sanity
+check, not a statistically meaningful sample. Treat backtest output as a
+smoke test of the rules; the forward-running hypothetical P&L curve is the
+real signal-quality tracker. (Longer lookbacks would need paid data, which
+is out of scope by design.)
+
 ## Known limitations (accepted — do not "fix" with paid services)
 
 - yfinance is ~15 minutes delayed → 5m triggers are advisory-only.

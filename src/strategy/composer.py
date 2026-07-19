@@ -16,7 +16,7 @@ import json
 from src.utils.logger import log
 from src.utils.semantic_converter import SemanticConverter
 from src.agents.regime_detector_agent import RegimeDetector
-from src.agents.trigger import TriggerDetector
+from src.agents.trigger_detector_agent import TriggerDetector
 from src.server.state import global_state
 
 class StrategyComposer:
@@ -38,12 +38,14 @@ class StrategyComposer:
             self.setup_agent = SetupAgentLLM()
             self.trigger_agent = TriggerAgentLLM()
         else:
-            from src.agents.trend import TrendAgent
-            from src.agents.setup import SetupAgent
-            from src.agents.trigger import TriggerAgent
-            self.trend_agent = TrendAgent()
-            self.setup_agent = SetupAgent()
-            self.trigger_agent = TriggerAgent()
+            # TrendAgent/SetupAgent/TriggerAgent are abstract bases; the
+            # concrete rule-based variants are the NoLLM classes.
+            from src.agents.trend import TrendAgentNoLLM
+            from src.agents.setup import SetupAgentNoLLM
+            from src.agents.trigger import TriggerAgentNoLLM
+            self.trend_agent = TrendAgentNoLLM()
+            self.setup_agent = SetupAgentNoLLM()
+            self.trigger_agent = TriggerAgentNoLLM()
         
     async def run_four_layer_analysis(self, 
                                       quant_analysis: Dict, 

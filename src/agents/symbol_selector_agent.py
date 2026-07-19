@@ -29,7 +29,9 @@ import time
 
 from src.utils.logger import log
 from src.config import config
-from src.backtest.engine import BacktestEngine, BacktestConfig
+# NOTE: BacktestEngine/BacktestConfig are imported lazily inside
+# _run_symbol_backtest — a module-level import creates a circular chain
+# (backtest.engine -> data_replay -> agents -> symbol_selector -> backtest.engine).
 
 
 def calculate_adx(klines: List[Dict], period: int = 14) -> float:
@@ -909,6 +911,7 @@ class SymbolSelectorAgent:
     ) -> Optional[Dict]:
         """Run backtest for a single symbol using thread executor"""
         try:
+            from src.backtest.engine import BacktestEngine, BacktestConfig
             config = BacktestConfig(
                 symbol=symbol,
                 start_date=start_time.strftime('%Y-%m-%d %H:%M'),
