@@ -53,6 +53,10 @@ reports/
 reports/**/*
 *.html
 !web/*.html
+!frontend/index.html
+
+# Frontend build state
+frontend/tsconfig.tsbuildinfo
 
 # 数据库文件 (Database Files)
 *.db

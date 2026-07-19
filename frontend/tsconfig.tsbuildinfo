@@ -1,1 +1,0 @@
-{"root":["./src/main.tsx","./src/components/CandleChart.tsx","./src/components/Shell.tsx","./src/lib/api.ts","./src/pages/Crypto.tsx","./src/pages/Futures.tsx","./src/pages/Macro.tsx","./src/pages/News.tsx","./src/pages/Portfolio.tsx","./src/pages/Settings.tsx","./src/pages/Stocks.tsx"],"version":"5.9.3"}
