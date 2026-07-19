@@ -140,16 +140,12 @@ def main():
         # 注意：这里我们捕获异常但不退出，以免影响主程序启动，但请务必关注日志
     # ==============================================================================
     
-    # 根据部署模式设置默认周期间隔
-    # Local: 1 分钟 (开发测试用)
-    # Railway: 5 分钟 (生产环境)
-    if args.interval == 3.0:  # 如果用户没有通过 CLI 指定间隔
-        if DEPLOYMENT_MODE == 'local':
-            args.interval = 1.0
-            print(f"🏠 Local mode: Cycle interval set to 1 minute")
-        else:
-            args.interval = 5.0
-            print(f"☁️ Railway mode: Cycle interval set to 5 minutes")
+    # Cycle interval: CLI --interval wins; otherwise config cycle.interval_minutes
+    # (default 15 — one analysis of all four instruments every 15 minutes).
+    if args.interval == 3.0:  # argparse default => user didn't specify
+        from src.config import Config as _CfgInterval
+        args.interval = float(_CfgInterval().get('cycle.interval_minutes', 15) or 15)
+        print(f"⏱️ Cycle interval from config: {args.interval:g} minutes")
       
     # 交易参数
     used_kline_limit = int(args.kline_limit) if args.kline_limit and args.kline_limit > 0 else 300
@@ -229,11 +225,17 @@ def main():
         # or exit immediately. Usually 'once' implies run and exit.
         
     else:
-        # Default to Stopped - Wait for user to click Start button
-        if global_state.execution_mode != "Running":
+        # cycle.autostart (default true): begin the signal loop immediately.
+        # Set it to false to require the dashboard Start button.
+        from src.config import Config as _Config
+        autostart = bool(_Config().get('cycle.autostart', True))
+        if autostart:
+            global_state.execution_mode = "Running"
+            log.info("🚀 Signal engine autostarted (cycle.autostart=true)")
+        elif global_state.execution_mode != "Running":
             global_state.execution_mode = "Stopped"
             log.info("🚀 System ready (Stopped). Waiting for user to click Start button...")
-        
+
         global_state.is_running = True  # Keep event loop running
         bot.run_continuous(interval_minutes=args.interval, headless=args.headless)
 

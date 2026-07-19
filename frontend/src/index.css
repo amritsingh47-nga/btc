@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { @apply bg-zinc-700 rounded; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
+
+.card {
+  @apply rounded-xl border border-zinc-800 bg-zinc-900/60 p-4;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+}
+
+.btn {
+  @apply inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-100 hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply border-emerald-700 bg-emerald-600 hover:bg-emerald-500 text-white;
+}
+
+.input {
+  @apply rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-emerald-600;
+}
+
+table.data th {
+  @apply px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400 border-b border-zinc-800;
+}
+table.data td {
+  @apply px-3 py-2 text-sm border-b border-zinc-800/60;
+}

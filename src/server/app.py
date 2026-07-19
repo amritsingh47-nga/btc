@@ -1618,15 +1618,33 @@ async def serve_i18n_js():
 # Serve Static Files
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
+# New React dashboard (frontend/dist). Falls back to the legacy web/
+# dashboard when the frontend has not been built yet.
+FRONTEND_DIST = os.path.join(BASE_DIR, 'frontend', 'dist')
+FRONTEND_BUILT = os.path.exists(os.path.join(FRONTEND_DIST, 'index.html'))
+if FRONTEND_BUILT:
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, 'assets')), name="app-assets")
+
 # Serve Reports Directory
 reports_dir = os.path.join(BASE_DIR, 'reports')
 if os.path.exists(reports_dir):
     app.mount("/reports", StaticFiles(directory=reports_dir), name="reports")
 
-# Root Route -> Checks login
+# Root Route -> new React dashboard (or legacy fallback). Checks login.
 @app.get("/")
 async def read_root(request: Request):
-    # Check if authenticated
+    try:
+        verify_auth(request)
+        if FRONTEND_BUILT:
+            return FileResponse(os.path.join(FRONTEND_DIST, 'index.html'))
+        return FileResponse(os.path.join(WEB_DIR, 'index.html'))
+    except HTTPException:
+        return RedirectResponse("/login")
+
+
+@app.get("/legacy")
+async def read_legacy(request: Request):
+    """Old built-in dashboard, kept for debugging while it's useful."""
     try:
         verify_auth(request)
         return FileResponse(os.path.join(WEB_DIR, 'index.html'))
