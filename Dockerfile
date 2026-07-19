@@ -30,6 +30,6 @@ COPY . .
 # Expose port 8000
 EXPOSE 8000
 
-# Run the command to start the application
-# Railway auto-detects deployment mode via RAILWAY_ENVIRONMENT variable
-CMD ["python", "main.py", "--mode", "continuous", "--interval", "1"]
+# Run the signal engine + dashboard. Cycle interval comes from
+# config.yaml (cycle.interval_minutes, default 15).
+CMD ["python", "main.py", "--mode", "continuous"]

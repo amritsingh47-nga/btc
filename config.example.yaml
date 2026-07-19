@@ -65,6 +65,22 @@ trading:
   selector_min_price: 0.05  # 过滤超低价币种
   selector_min_quote_volume_per_usdt: 3000  # 动态成交额下限(每1 USDT权益)
   
+# News / sentiment module
+news:
+  # Keyless finance RSS feeds. Feeds die — edit freely, no code changes.
+  feeds:
+    - {name: "CNBC Top News", url: "https://www.cnbc.com/id/100003114/device/rss/rss.html"}
+    - {name: "CNBC Markets", url: "https://www.cnbc.com/id/20910258/device/rss/rss.html"}
+    - {name: "MarketWatch Top", url: "https://feeds.content.dowjones.io/public/rss/mw_topstories"}
+    - {name: "MarketWatch Pulse", url: "https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines"}
+    - {name: "Yahoo Finance", url: "https://finance.yahoo.com/news/rssindex"}
+  # Truth Social mirror for Trump-post monitoring (env TRUMP_RSS_URL wins).
+  # Mirrors change; verify on first run and swap when it dies.
+  trump_rss_url: "https://trumpstruth.org/feed"
+  # Future upgrade slot (NOT implemented — official Truth API is
+  # institutional/paid; scraper APIs are paid after trial):
+  # truth_api_token: ""
+
 # 风控配置
 risk:
   max_risk_per_trade_pct: 1.5  # 单笔最大风险
